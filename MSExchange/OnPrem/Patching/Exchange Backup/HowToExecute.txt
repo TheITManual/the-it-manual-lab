@@ -1,0 +1,56 @@
+##    AUTHOR:
+##    Created by: TheITManual
+##    Version: 1.0
+
+
+## PART 01 - Execute the BackupAIO script as shown below after replacing the example drive letters and/or UNC paths with valid paths for your Environment
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# DESCRIPTION:
+#      Creates a per-run backup folder and captures:
+#      • Exchange Transport Rules (Export-TransportRuleCollection)
+#      • IIS App Pools & Sites (XML via appcmd)
+#      • IIS Full Backup (appcmd add backup "<timestamped_name>")
+#      • Windows Services (rich details via CIM to CSV)
+#      • A specified Web.config file
+#      • Generates a ZIP of the run folder, computes a SHA-256 checksum file (.sha256),
+
+
+
+## BackupAIO Script:
+.\Exchange-BackupAIO.ps1 ` 
+  -RootBackupDir "D:\Ops\Exchange\Backups\BackedUpFiles" `			# Local backup drive & folder
+  -ExchangeModulePath "D:\Exchange\Bin\RemoteExchange.ps1" `			# Path to Exchange RemoteExchange.ps1
+  -WebConfigSourcePath "D:\Exchange\ClientAccess\ecp\Web.config" `		# Path to Web.config (ClientAccess\ECP)
+  -NetworkDestinationDir "\\fileserver\share\Backups\NetworkDestinationDir"	# Network destination folder
+
+
+
+
+=============================================================================================================================================================================================================================
+
+
+
+
+## PART 02 - ZIP integrity verifier (OPTIONAL)
+------------------------------------------------
+
+
+# DESCRIPTION:
+# The ZIP integrity verifier (that reads the .sha256 file) is about proving that the backup ZIP you restored from or copied to a share is bit-for-bit identical to what the script created at backup time.
+
+
+
+
+## Script to verify all backups in a Network folder (recursive):
+.\Verify-BackupZipChecksum.ps1 -Directory "\\fileserver\share\Backups\NetworkDestinationDir" -Recurse `
+| Out-String -Width 4096 | Write-Host
+
+
+
+## Script to verify one backup in a Network folder:
+.\Verify-BackupZipChecksum.ps1 -Sha256Path "\\fileserver\share\Backups\NetworkDestinationDir\<ExactNameOfYourBackupFile.zip.sha256>"
+
+
+
+=============================================================================================================================================================================================================================
